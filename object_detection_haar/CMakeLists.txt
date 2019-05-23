@@ -18,8 +18,7 @@ include_directories(
 )
 
 catkin_install_python(PROGRAMS
-  nodes/object_detect_haar_node
-  nodes/object_track_node
+  nodes/object_detection_haar_node
   nodes/cv_bridge.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
