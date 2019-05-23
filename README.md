@@ -1,6 +1,6 @@
 # ros-object-detection-haar
 
-Object detection package for ROS that uses Haar cascade classifiers. Requires OpenCV. Useful for simple face tracking on crappy embedded hardware.
+Object detection package for ROS that uses Haar cascade classifiers. Requires OpenCV. Useful for simple face detection, cat detection, etc. on crappy embedded hardware. You can get 15 fps+ on a Raspberry Pi.
 
 ## Try it
 
