@@ -22,32 +22,35 @@ class ObjectDetectHaarNode(object):
         self.cascade = cv2.CascadeClassifier(os.path.join(PATH, "haar", self.param_cascade))
         self.sub_image = rospy.Subscriber(self.param_topic_image, Image, self.on_image, queue_size = 1)
         self.pub_detections = rospy.Publisher(self.param_topic_detections, String, queue_size = 1)
-        self.is_processing = False
+        self.last_msg = None
 
     def on_image(self, msg):
-        if self.is_processing:
-            return
-
-        self.is_processing = True
-
-        try:
-            t = time.time()
-            image = cv_bridge.imgmsg_to_cv2(msg, "bgr8")
-            image = cv2.resize(image, (320, 240))
-            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            detections = self.cascade.detectMultiScale(gray, 1.2, 5)
-
-            m = String()
-            detections_v = [[x,y,w,h] for (x,y,w,h) in detections]
-            m.data = json.dumps(detections_v)
-            self.pub_detections.publish(m)
-    
-        finally:
-            self.is_processing = False
-
+        self.last_msg = msg
 
     def spin(self):
-        rospy.spin()
+
+        rate = rospy.Rate(15)
+
+        while not rospy.is_shutdown():
+            rate.sleep()
+            if self.last_msg is None:
+                continue
+
+            try:
+                t = time.time()
+                image = cv_bridge.imgmsg_to_cv2(self.last_msg, "bgr8")
+                self.last_msg = None
+                gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                detections = self.cascade.detectMultiScale(gray, 1.2, 5)
+
+                m = String()
+                detections_v = [[x,y,w,h] for (x,y,w,h) in detections]
+                m.data = json.dumps(detections_v)
+                self.pub_detections.publish(m)
+
+            except:
+                rospy.logwarn_throttle(2, "object detection error")
+
 
 if __name__ == "__main__":
     node = ObjectDetectHaarNode()
