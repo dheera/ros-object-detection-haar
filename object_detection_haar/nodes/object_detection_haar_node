@@ -20,8 +20,8 @@ class ObjectDetectHaarNode(object):
         self.param_topic_detections = rospy.get_param("~topic_detections", "detections")
         self.param_cascade = rospy.get_param("~cascade", "haarcascade_frontalface_default.xml")
         self.cascade = cv2.CascadeClassifier(os.path.join(PATH, "haar", self.param_cascade))
-        self.sub_image = rospy.Subscriber(param_topic_image, Image, self.on_image, queue_size = 1)
-        self.pub_detections = rospy.Publisher(param_topic_detections, String, queue_size = 1)
+        self.sub_image = rospy.Subscriber(self.param_topic_image, Image, self.on_image, queue_size = 1)
+        self.pub_detections = rospy.Publisher(self.param_topic_detections, String, queue_size = 1)
         self.is_processing = False
 
     def on_image(self, msg):
