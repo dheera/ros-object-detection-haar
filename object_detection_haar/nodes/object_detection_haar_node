@@ -19,6 +19,7 @@ class ObjectDetectHaarNode(object):
         self.param_topic_image = rospy.get_param("~topic_image", "image_raw")
         self.param_topic_detections = rospy.get_param("~topic_detections", "detections")
         self.param_cascade = rospy.get_param("~cascade", "haarcascade_frontalface_default.xml")
+        self.param_rate = rospy.get_param("~rate", 15)
         self.cascade = cv2.CascadeClassifier(os.path.join(PATH, "haar", self.param_cascade))
         self.sub_image = rospy.Subscriber(self.param_topic_image, Image, self.on_image, queue_size = 1)
         self.pub_detections = rospy.Publisher(self.param_topic_detections, String, queue_size = 1)
@@ -29,7 +30,7 @@ class ObjectDetectHaarNode(object):
 
     def spin(self):
 
-        rate = rospy.Rate(15)
+        rate = rospy.Rate(self.param_rate)
 
         while not rospy.is_shutdown():
             rate.sleep()
@@ -45,7 +46,13 @@ class ObjectDetectHaarNode(object):
                 detections = self.cascade.detectMultiScale(gray, 1.2, 5)
 
                 m = String()
-                detections_v = [[int(x),int(y),int(w),int(h)] for (x,y,w,h) in detections]
+                detections_v = [
+                    [
+                        float(x) / image.shape[0],
+                        float(y) / image.shape[1],
+                        float(w) / image.shape[0],
+                        float(h) / image.shape[1],
+                    ] for (x,y,w,h) in detections]
                 m.data = json.dumps(detections_v)
                 self.pub_detections.publish(m)
 
